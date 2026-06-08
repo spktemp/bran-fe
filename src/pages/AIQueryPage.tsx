@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { Send, Brain, Clock, Users, BarChart3 } from "lucide-react"
+import { validateRequiredText } from "@/lib/validation"
 import Markdown from "react-markdown"
 
 interface QueryEntry {
@@ -33,7 +34,11 @@ export default function AIQueryPage() {
 
   const handleSubmit = async (q?: string) => {
     const text = q || query.trim()
-    if (!text) return
+    const validationError = validateRequiredText(text, "Question")
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
 
     setLoading(true)
     setQuery("")

@@ -15,6 +15,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react"
+import {
+  firstValidationError,
+  validateIndianPhone,
+  validateRequiredText,
+} from "@/lib/validation"
 
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -62,6 +67,14 @@ export default function UserDetailPage() {
 
   const handleSave = async () => {
     if (!id) return
+    const validationError = firstValidationError(
+      validateRequiredText(editForm.name, "Name"),
+      validateIndianPhone(editForm.phone)
+    )
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     setSaving(true)
     try {
       const updated = await usersApi.update(id, editForm)
@@ -75,7 +88,12 @@ export default function UserDetailPage() {
   }
 
   const addSocial = async () => {
-    if (!id || !socialForm.platformAccountId) return
+    if (!id) return
+    const validationError = validateRequiredText(socialForm.platformAccountId, "Account ID")
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     try {
       const account = await usersApi.addSocialAccount(id, {
         platform: socialForm.platform,
@@ -154,7 +172,12 @@ export default function UserDetailPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Phone</Label>
-                  <Input value={editForm.phone} onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))} />
+                  <Input
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
+                    placeholder="9876543210 or +91 98765 43210"
+                    inputMode="tel"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Role</Label>

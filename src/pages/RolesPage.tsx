@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { Plus, Shield, Users, Trash2 } from "lucide-react"
+import { validateRequiredText } from "@/lib/validation"
 
 const BUILTIN_ROLES = ["admin", "manager", "content_creator"]
 
@@ -40,7 +41,11 @@ export default function RolesPage() {
   useEffect(() => { load() }, [])
 
   const handleCreate = async () => {
-    if (!createForm.name.trim()) return
+    const validationError = validateRequiredText(createForm.name, "Role name")
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     try {
       await rolesApi.create(createForm)
       toast.success("Role created")

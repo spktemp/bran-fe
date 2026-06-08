@@ -20,6 +20,8 @@ import {
   FileVideo,
   Wrench,
   Lightbulb,
+  ClipboardList,
+  Mic,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -43,9 +45,11 @@ const navItems: NavItem[] = [
   { label: "Users", path: "/users", icon: <Users className="h-4 w-4" />, roles: ["admin"] },
   { label: "Roles", path: "/roles", icon: <Shield className="h-4 w-4" />, roles: ["admin"] },
   { label: "Tasks", path: "/tasks", icon: <CheckSquare className="h-4 w-4" /> },
+  { label: "Adhoc Work", path: "/adhoc-work", icon: <ClipboardList className="h-4 w-4" /> },
+  { label: "Work Units", path: "/work", icon: <Mic className="h-4 w-4" /> },
   { label: "Nodes", path: "/contents", icon: <FileVideo className="h-4 w-4" /> },
   { label: "Ideation", path: "/ideation", icon: <Lightbulb className="h-4 w-4" /> },
-  { label: "AI Query", path: "/ai", icon: <Brain className="h-4 w-4" />, roles: ["admin", "manager"] },
+  { label: "AI Query", path: "/ai", icon: <Brain className="h-4 w-4" />, roles: ["admin", "manager", "content_creator"] },
   { label: "Social Stats", path: "/social-stats", icon: <BarChart3 className="h-4 w-4" />, roles: ["admin", "manager"] },
   { label: "Social Insights", path: "/social-insights", icon: <Share2 className="h-4 w-4" /> },
   { label: "Teams", path: "/teams", icon: <UsersRound className="h-4 w-4" />, roles: ["admin", "manager"] },
@@ -69,17 +73,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   const navContent = (
     <>
-      <div className="flex h-16 items-center justify-between border-b border-border px-6">
-        <Link to="/dashboard" className="font-brand text-2xl tracking-wider text-accent" onClick={onClose}>
-          BRan
+      <div className="flex h-20 items-center justify-between border-b border-border/50 px-5">
+        <Link to="/dashboard" className="group flex items-center gap-3" onClick={onClose}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground shadow-lg shadow-primary/20">
+            B
+          </span>
+          <span className="font-brand text-2xl tracking-wider text-[var(--sidebar-foreground)]">
+            BRan
+          </span>
         </Link>
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
           <X className="h-5 w-5" />
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 py-4">
-        <nav className="space-y-1 px-3">
+      <ScrollArea className="flex-1 py-5">
+        <nav className="space-y-1.5 px-3">
           {visibleItems.map((item) => {
             const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/")
             return (
@@ -88,13 +97,20 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 to={item.path}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-primary/15 text-accent"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                 )}
               >
-                {item.icon}
+                <span
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-xl transition-colors",
+                    isActive ? "bg-primary-foreground/18" : "bg-muted/55 group-hover:bg-background/80"
+                  )}
+                >
+                  {item.icon}
+                </span>
                 {item.label}
               </Link>
             )
@@ -102,11 +118,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      <Separator />
+      <Separator className="bg-border/60" />
       <div className="p-3">
         <button
           onClick={() => { logout(); navigate("/login"); onClose(); }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
           <LogOut className="h-4 w-4" />
           Log out
@@ -122,7 +138,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card transition-transform duration-300 lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border/50 bg-[var(--sidebar)] shadow-2xl backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0 lg:shadow-xl",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >

@@ -13,6 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Save, Plus, Trash2 } from "lucide-react"
+import {
+  firstValidationError,
+  validateIndianPhone,
+  validateRequiredText,
+} from "@/lib/validation"
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth()
@@ -35,6 +40,14 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return
+    const validationError = firstValidationError(
+      validateRequiredText(form.name, "Name"),
+      validateIndianPhone(form.phone)
+    )
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     setSaving(true)
     try {
       await usersApi.update(user.id, form)
@@ -48,7 +61,12 @@ export default function ProfilePage() {
   }
 
   const addSocial = async () => {
-    if (!user || !socialForm.platformAccountId) return
+    if (!user) return
+    const validationError = validateRequiredText(socialForm.platformAccountId, "Account ID")
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     try {
       const account = await usersApi.addSocialAccount(user.id, {
         platform: socialForm.platform,
@@ -110,7 +128,12 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label>Phone</Label>
-              <Input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone number" />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                placeholder="9876543210 or +91 98765 43210"
+                inputMode="tel"
+              />
             </div>
           </div>
           <div className="space-y-2">

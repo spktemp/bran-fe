@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Plus, Trash2, UsersRound } from "lucide-react"
 import { contentsApi, usersApi } from "@/lib/api"
+import { validateRequiredSelection } from "@/lib/validation"
 import type { ContentNode, TeamRole } from "@/types"
 import { TEAM_ROLES, pretty } from "@/components/contents/contentMeta"
 import { Button } from "@/components/ui/button"
@@ -178,8 +179,15 @@ export function TeamSection({ node, contentId }: Props) {
               Cancel
             </Button>
             <Button
-              disabled={!userId || addMutation.isPending}
-              onClick={() => addMutation.mutate()}
+              disabled={addMutation.isPending}
+              onClick={() => {
+                const validationError = validateRequiredSelection(userId, "Team member")
+                if (validationError) {
+                  toast.error(validationError)
+                  return
+                }
+                addMutation.mutate()
+              }}
             >
               {addMutation.isPending ? "Adding..." : "Add member"}
             </Button>

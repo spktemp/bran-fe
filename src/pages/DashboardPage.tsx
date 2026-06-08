@@ -6,6 +6,7 @@ import { tasksApi, usersApi } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DeadlinesWidget } from "@/components/work/DeadlinesWidget"
 import { Users, CheckSquare, Clock, TrendingUp } from "lucide-react"
 
 interface DashboardStats {
@@ -136,37 +137,41 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-accent">Recent Tasks</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No tasks this week yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {recentTasks.map((task) => (
-                <div key={task.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{task.title}</p>
-                    <div className="flex items-center gap-2">
-                      {task.platform && (
-                        <Badge variant="outline" className="text-[10px]">{task.platform}</Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {isAdmin ? task.user.name : ""} {task.dueDate ? `Due ${new Date(task.dueDate).toLocaleDateString()}` : ""}
-                      </span>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DeadlinesWidget />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-accent">Recent Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentTasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No tasks this week yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentTasks.map((task) => (
+                  <div key={task.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{task.title}</p>
+                      <div className="flex items-center gap-2">
+                        {task.platform && (
+                          <Badge variant="outline" className="text-[10px]">{task.platform}</Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {isAdmin ? task.user.name : ""} {task.dueDate ? `Due ${new Date(task.dueDate).toLocaleDateString()}` : ""}
+                        </span>
+                      </div>
                     </div>
+                    <Badge variant={statusVariant(task.status)} className="text-[10px]">
+                      {task.status.replace("_", " ")}
+                    </Badge>
                   </div>
-                  <Badge variant={statusVariant(task.status)} className="text-[10px]">
-                    {task.status.replace("_", " ")}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

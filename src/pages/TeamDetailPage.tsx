@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
+import { validateRequiredText } from "@/lib/validation"
 
 export default function TeamDetailPage() {
   const { id = "" } = useParams<{ id: string }>()
@@ -52,11 +53,12 @@ export default function TeamDetailPage() {
   const detailsChanged = name.trim() !== team.name || (description.trim() || "") !== (team.description ?? "")
 
   const saveDetails = async () => {
-    const nextName = name.trim()
-    if (!nextName) {
-      toast.error("Team name is required")
+    const validationError = validateRequiredText(name, "Team name")
+    if (validationError) {
+      toast.error(validationError)
       return
     }
+    const nextName = name.trim()
 
     setSavingDetails(true)
     try {

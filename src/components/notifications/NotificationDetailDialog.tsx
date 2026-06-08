@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { validateRequiredText } from "@/lib/validation"
 import {
   CheckCircle2,
   Coins,
@@ -154,9 +155,14 @@ export function NotificationDetailDialog({
           onApprove={(resourceId) =>
             reviewResource.mutate({ resourceId, approvalState: "APPROVED" })
           }
-          onReject={(resourceId) =>
+          onReject={(resourceId) => {
+            const validationError = validateRequiredText(reviewNote, "Rejection reason")
+            if (validationError) {
+              toast.error(validationError)
+              return
+            }
             reviewResource.mutate({ resourceId, approvalState: "REJECTED" })
-          }
+          }}
           onViewInWorkflow={handleViewInWorkflow}
           onClose={() => onOpenChange(false)}
           isPending={reviewResource.isPending}

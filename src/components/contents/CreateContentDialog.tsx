@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { contentsApi, projectsApi, teamsApi } from "@/lib/api"
+import { firstValidationError, validateRequiredSelection, validateRequiredText } from "@/lib/validation"
 import type { ContentType } from "@/types"
 import {
   CONTENT_TYPES,
@@ -120,16 +121,13 @@ export function CreateContentDialog({ open, onOpenChange }: Props) {
   })
 
   const submit = () => {
-    if (!form.title.trim()) {
-      toast.error("Title is required")
-      return
-    }
-    if (!form.projectId) {
-      toast.error("Project is required")
-      return
-    }
-    if (!form.teamId) {
-      toast.error("Team is required")
+    const validationError = firstValidationError(
+      validateRequiredText(form.title, "Title"),
+      validateRequiredSelection(form.projectId, "Project"),
+      validateRequiredSelection(form.teamId, "Team")
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     createMutation.mutate()

@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { firstValidationError, validateRequiredSelection, validateRequiredText } from "@/lib/validation"
 import { Search, Plus, Pencil, Trash2, Users } from "lucide-react"
 
 interface FormState {
@@ -81,12 +82,12 @@ export default function TeamsPage() {
   }
 
   const handleCreate = async () => {
-    if (!form.name.trim()) {
-      toast.error("Team name is required")
-      return
-    }
-    if (!form.verticalId) {
-      toast.error("Vertical is required")
+    const validationError = firstValidationError(
+      validateRequiredText(form.name, "Team name"),
+      validateRequiredSelection(form.verticalId, "Vertical")
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     setSaving(true)
@@ -119,8 +120,10 @@ export default function TeamsPage() {
   }
 
   const handleEdit = async () => {
-    if (!editingTeam || !form.name.trim()) {
-      toast.error("Team name is required")
+    if (!editingTeam) return
+    const validationError = validateRequiredText(form.name, "Team name")
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     setSaving(true)

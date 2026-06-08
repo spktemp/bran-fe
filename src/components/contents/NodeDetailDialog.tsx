@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { validateRequiredText } from "@/lib/validation"
 import {
   Calendar,
   CheckCircle2,
@@ -377,8 +378,9 @@ export function NodeDetailDialog({ open, onOpenChange, node, content, index, can
             </Button>
             <Button
               onClick={() => {
-                if (!editForm.name.trim()) {
-                  toast.error("Name is required")
+                const validationError = validateRequiredText(editForm.name, "Name")
+                if (validationError) {
+                  toast.error(validationError)
                   return
                 }
                 updateMutation.mutate()

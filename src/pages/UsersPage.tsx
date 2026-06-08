@@ -16,6 +16,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Search, ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import {
+  firstValidationError,
+  validateEmail,
+  validateIndianPhone,
+  validateRequiredText,
+} from "@/lib/validation"
 
 type CreateUserApiError = {
   error?: string
@@ -108,8 +114,14 @@ export default function UsersPage() {
   }
 
   const createUser = async () => {
-    if (!createForm.email.trim() || !createForm.name.trim() || !createForm.roleId) {
-      toast.error("Email, name, and role are required")
+    const validationError = firstValidationError(
+      validateEmail(createForm.email),
+      validateRequiredText(createForm.name, "Name"),
+      !createForm.roleId ? "Role is required" : null,
+      validateIndianPhone(createForm.phone)
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
 
@@ -295,7 +307,7 @@ export default function UsersPage() {
                 type="email"
                 value={createForm.email}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
-                placeholder="name@example.com"
+                placeholder="name@company.com"
               />
             </div>
 
@@ -329,7 +341,8 @@ export default function UsersPage() {
               <Input
                 value={createForm.phone}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
-                placeholder="+91-9876543210"
+                placeholder="9876543210 or +91 98765 43210"
+                inputMode="tel"
               />
             </div>
 

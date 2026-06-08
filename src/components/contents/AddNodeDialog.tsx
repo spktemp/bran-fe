@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { contentsApi } from "@/lib/api"
+import { firstValidationError, validateNonNegativeInteger, validateRequiredText } from "@/lib/validation"
 import type { NodeKind } from "@/types"
 import { NODE_KINDS, pretty } from "@/components/contents/contentMeta"
 import { Button } from "@/components/ui/button"
@@ -66,16 +67,13 @@ export function AddNodeDialog({ open, onOpenChange, contentId, defaultOrderIndex
   })
 
   const submit = () => {
-    if (!form.name.trim()) {
-      toast.error("Name is required")
+    const validationError = firstValidationError(
+      validateRequiredText(form.name, "Name"),
+      validateNonNegativeInteger(form.orderIndex, { label: "Order index" })
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
-    }
-    if (form.orderIndex !== "") {
-      const n = Number(form.orderIndex)
-      if (!Number.isInteger(n) || n < 0) {
-        toast.error("Order index must be a non-negative integer")
-        return
-      }
     }
     createMutation.mutate()
   }

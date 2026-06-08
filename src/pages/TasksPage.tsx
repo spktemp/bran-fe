@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { Plus, LayoutGrid, List, ChevronLeft, ChevronRight, ExternalLink, Heart, MessageCircle, Eye, Play, Share2, Repeat2, ThumbsUp, BarChart3, Loader2 } from "lucide-react"
+import { firstValidationError, normalizeUrl, validateOptionalUrl, validateRequiredText } from "@/lib/validation"
 
 const STATUS_COLUMNS: { key: TaskStatus; label: string; color: string }[] = [
   { key: "PENDING", label: "Pending", color: "text-amber-400" },
@@ -168,18 +169,22 @@ export default function TasksPage() {
   useEffect(() => { fetchTasks() }, [fetchTasks])
 
   const handleCreate = async () => {
-    if (!createForm.title.trim()) {
-      toast.error("Title is required")
+    const validationError = firstValidationError(
+      validateRequiredText(createForm.title, "Title"),
+      validateOptionalUrl(createForm.contentUrl, "Content URL")
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     setCreating(true)
     try {
       const data: Parameters<typeof tasksApi.create>[0] = {
-        title: createForm.title,
-        description: createForm.description || undefined,
+        title: createForm.title.trim(),
+        description: createForm.description.trim() || undefined,
         type: createForm.type,
         platform: createForm.type === "CONTENT_CREATION" && createForm.platform ? createForm.platform as TaskPlatform : undefined,
-        contentUrl: createForm.contentUrl || undefined,
+        contentUrl: createForm.contentUrl.trim() ? normalizeUrl(createForm.contentUrl) : undefined,
         dueDate: createForm.dueDate ? new Date(createForm.dueDate).toISOString() : undefined,
       }
       await tasksApi.create(data)

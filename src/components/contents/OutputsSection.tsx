@@ -3,6 +3,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { CheckCircle2, ExternalLink, FileCheck, GitBranch, Pencil, Plus, Trash2 } from "lucide-react"
 import { contentsApi } from "@/lib/api"
+import {
+  firstValidationError,
+  normalizeUrl,
+  validateRequiredSelection,
+  validateRequiredText,
+  validateUrl,
+} from "@/lib/validation"
 import type { ApprovalState, Content, ContentNode, ContentNodeOutput } from "@/types"
 import {
   APPROVAL_BADGE,
@@ -78,7 +85,7 @@ export function OutputsSection({ node, content, canReview }: Props) {
     mutationFn: () => {
       const payload = {
         label: form.label.trim(),
-        url: form.url.trim(),
+        url: normalizeUrl(form.url),
         notes: form.notes.trim() || undefined,
       }
       if (editing) return contentsApi.updateOutput(editing.id, payload)
@@ -121,15 +128,12 @@ export function OutputsSection({ node, content, canReview }: Props) {
   })
 
   const submit = () => {
-    if (!form.label.trim()) {
-      toast.error("Label is required")
-      return
-    }
-    try {
-      // basic URL sanity
-      new URL(form.url.trim())
-    } catch {
-      toast.error("URL is invalid")
+    const validationError = firstValidationError(
+      validateRequiredText(form.label, "Label"),
+      validateUrl(form.url)
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     saveMutation.mutate()
@@ -371,8 +375,15 @@ export function OutputsSection({ node, content, canReview }: Props) {
               Cancel
             </Button>
             <Button
-              onClick={() => reviewMutation.mutate()}
-              disabled={!reviewForm.approvalState || reviewMutation.isPending}
+              onClick={() => {
+                const validationError = validateRequiredSelection(reviewForm.approvalState, "Review state")
+                if (validationError) {
+                  toast.error(validationError)
+                  return
+                }
+                reviewMutation.mutate()
+              }}
+              disabled={reviewMutation.isPending}
             >
               {reviewMutation.isPending ? "Saving..." : "Submit review"}
             </Button>

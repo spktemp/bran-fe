@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +21,7 @@ interface TopBarProps {
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const { user, logout } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
 
@@ -31,16 +32,28 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     .toUpperCase()
     .slice(0, 2) ?? "?"
 
+  const pageTitle =
+    location.pathname
+      .split("/")
+      .filter(Boolean)[0]
+      ?.replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase()) ?? "Dashboard"
+
   return (
-    <header className="sticky top-0 z-40 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-full items-center gap-4 px-4 lg:px-6">
+    <header className="sticky top-0 z-40 border-b border-border/45 bg-transparent px-4 py-3 backdrop-blur-xl lg:px-6">
+      <div className="flex h-14 items-center gap-4 rounded-2xl border border-border/60 bg-card/80 px-3 shadow-lg shadow-black/5 backdrop-blur-xl">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
 
-        <Link to="/" className="font-brand text-xl tracking-wider text-accent lg:hidden">
+        <Link to="/" className="font-brand text-xl tracking-wider text-foreground lg:hidden">
           BRan
         </Link>
+
+        <div className="hidden min-w-0 lg:block">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Workspace</p>
+          <h1 className="truncate text-sm font-semibold text-foreground">{pageTitle}</h1>
+        </div>
 
         <div className="flex-1" />
 
@@ -50,7 +63,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           onClick={toggleTheme}
-          className="rounded-full border border-border text-foreground hover:bg-secondary hover:text-accent"
+          className="rounded-full border border-border/70 bg-card/70 text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground"
         >
           {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
@@ -61,9 +74,9 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2 rounded-full border border-primary/60 bg-primary/10 px-2 text-foreground hover:bg-primary/20"
+              className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-2 text-foreground shadow-sm hover:bg-muted"
             >
-              <Avatar className="h-8 w-8 border-2 border-primary">
+              <Avatar className="h-8 w-8 border border-border">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
                 <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">{initials}</AvatarFallback>
               </Avatar>

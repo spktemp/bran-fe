@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import type { User } from "@/types"
 import { ShieldCheck, LogIn } from "lucide-react"
+import { firstValidationError, validateEmail, validateRequiredText } from "@/lib/validation"
 
 function normalizeAuthUser(raw: { id: string; email: string; name: string; avatarUrl: string | null; role: string }): User {
   return {
@@ -69,8 +70,12 @@ export default function LoginPage() {
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.trim() || !password.trim()) {
-      toast.error("Email and password are required")
+    const validationError = firstValidationError(
+      validateEmail(email),
+      validateRequiredText(password, "Password")
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     setLoading(true)
@@ -88,8 +93,12 @@ export default function LoginPage() {
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!adminEmail.trim() || !adminPassword.trim()) {
-      toast.error("Email and password are required")
+    const validationError = firstValidationError(
+      validateEmail(adminEmail),
+      validateRequiredText(adminPassword, "Password")
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     setLoading(true)
@@ -147,7 +156,7 @@ export default function LoginPage() {
                 <Input
                   id="admin-email"
                   type="email"
-                  placeholder="admin@example.com"
+                  placeholder="admin@company.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   autoComplete="email"
@@ -187,7 +196,7 @@ export default function LoginPage() {
             <Input
               id="login-email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"

@@ -14,6 +14,13 @@ import {
   X,
 } from "lucide-react"
 import { contentsApi } from "@/lib/api"
+import {
+  firstValidationError,
+  validateCurrency,
+  validateMoneyAmount,
+  validatePositiveInteger,
+  validateRequiredText,
+} from "@/lib/validation"
 import { useAuth } from "@/contexts/AuthContext"
 import { hasPermission } from "@/types"
 import type {
@@ -257,33 +264,29 @@ export function ResourcesSection({ node, content }: Props) {
   })
 
   const submit = () => {
-    if (!form.name.trim()) {
-      toast.error("Name is required")
+    const validationError = firstValidationError(
+      validateRequiredText(form.name, "Name"),
+      validatePositiveInteger(form.quantity || "1", { label: "Quantity" }),
+      form.sourceType === "RENTAL"
+        ? firstValidationError(
+            validateMoneyAmount(form.cost, { label: "Cost" }),
+            validateCurrency(form.currency)
+          )
+        : null
+    )
+    if (validationError) {
+      toast.error(validationError)
       return
-    }
-    const qty = Number(form.quantity || "1")
-    if (!Number.isInteger(qty) || qty < 1) {
-      toast.error("Quantity must be a positive integer")
-      return
-    }
-    if (form.sourceType === "RENTAL") {
-      const cost = Number(form.cost)
-      if (form.cost === "" || Number.isNaN(cost) || cost < 0) {
-        toast.error("Cost is required for rental resources")
-        return
-      }
-      if (!form.currency.trim()) {
-        toast.error("Currency is required for rental resources")
-        return
-      }
     }
     saveMutation.mutate()
   }
 
   const submitReview = () => {
     if (!reviewTarget) return
-    if (reviewTarget.decision === "REJECTED" && !reviewNote.trim()) {
-      toast.error("A reason is required when rejecting")
+    const validationError =
+      reviewTarget.decision === "REJECTED" ? validateRequiredText(reviewNote, "Rejection reason") : null
+    if (validationError) {
+      toast.error(validationError)
       return
     }
     reviewMutation.mutate({

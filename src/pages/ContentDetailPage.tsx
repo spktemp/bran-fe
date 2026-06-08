@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { ChevronLeft, FolderKanban, Layers, Pencil, Trash2, UsersRound } from "lucide-react"
+import { firstValidationError, validateRequiredSelection, validateRequiredText } from "@/lib/validation"
 import { contentsApi, projectsApi, teamsApi } from "@/lib/api"
 import { useAuth } from "@/contexts/AuthContext"
 import { hasRole } from "@/types"
@@ -397,16 +398,13 @@ export default function ContentDetailPage() {
             </Button>
             <Button
               onClick={() => {
-                if (!editForm.title.trim()) {
-                  toast.error("Title is required")
-                  return
-                }
-                if (!editForm.projectId) {
-                  toast.error("Project is required")
-                  return
-                }
-                if (!editForm.teamId) {
-                  toast.error("Team is required")
+                const validationError = firstValidationError(
+                  validateRequiredText(editForm.title, "Title"),
+                  validateRequiredSelection(editForm.projectId, "Project"),
+                  validateRequiredSelection(editForm.teamId, "Team")
+                )
+                if (validationError) {
+                  toast.error(validationError)
                   return
                 }
                 updateMutation.mutate()

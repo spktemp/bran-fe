@@ -74,6 +74,67 @@ export interface PaginatedResponse<T> {
   }
 }
 
+export interface AdhocWorkEntry {
+  id: string
+  userId: string
+  description: string
+  output: string | null
+  effortHours: number | null
+  createdAt: string
+  updatedAt: string
+  user: { id: string; name: string; email: string }
+}
+
+export type WorkUnitStatus = "OPEN" | "CLOSED"
+
+export interface WorkStep {
+  id: string
+  workUnitId: string
+  description: string
+  deadline: string | null
+  done: boolean
+  createdAt: string
+}
+
+export interface WorkUnit {
+  id: string
+  userId: string
+  title: string
+  context: string
+  status: WorkUnitStatus
+  isPrivate: boolean
+  closedAt: string | null
+  nextDueAt: string | null
+  firstDueAt: string | null
+  createdAt: string
+  updatedAt: string
+  user: { id: string; name: string; email: string }
+  steps: WorkStep[]
+}
+
+export interface AudioWorkResult {
+  transcript: string
+  workUnits: WorkUnit[]
+}
+
+export interface DeadlineStep {
+  id: string
+  description: string
+  deadline: string
+  done: boolean
+  workUnit: {
+    id: string
+    title: string
+    status: WorkUnitStatus
+    isPrivate: boolean
+  }
+}
+
+export interface DeadlinesResult {
+  date: string
+  deadlines: DeadlineStep[]
+}
+
 export interface AIQueryResponse {
   report: string
   meta: {
@@ -174,6 +235,7 @@ export function hasRole(user: User | null, ...roles: RoleName[]): boolean {
 // UI can gate controls without an extra round-trip.
 const PERMISSION_ROLE_FALLBACK: Record<string, RoleName[]> = {
   approve_rental_resources: ["superadmin", "admin", "chief_of_staff"],
+  create_tasks: ["superadmin", "admin", "manager", "content_creator", "chief_of_staff"],
 }
 
 export function hasPermission(user: User | null, permission: string): boolean {

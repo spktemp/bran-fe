@@ -90,6 +90,16 @@ class ApiClient {
     } catch (error) { asApiError(error) }
   }
 
+  async postForm<T>(url: string, form: FormData): Promise<T> {
+    try {
+      const response = await this.client.post<ApiResponse<T>>(url, form, {
+        headers: { "Content-Type": undefined },
+      })
+      if (!response.data.success) throw new ApiError(response.data.error || "Request failed", response.status, response.data.details)
+      return response.data.data as T
+    } catch (error) { asApiError(error) }
+  }
+
   async put<T>(url: string, data?: unknown): Promise<T> {
     try {
       const response = await this.client.put<ApiResponse<T>>(url, data)
@@ -212,6 +222,86 @@ export const projectsApi = {
   updateMember: (memberId: string, data: Partial<import("@/types").HierarchyMemberPayload>) =>
     api.put<import("@/types").HierarchyMember>(`/projects/members/${memberId}`, data),
   deleteMember: (memberId: string) => api.delete(`/projects/members/${memberId}`),
+}
+
+export const adhocWorkApi = {
+  create: (data: {
+    description: string
+    output?: string
+    effortHours?: number
+  }) => api.post<import("@/types").AdhocWorkEntry>("/adhoc-work", data),
+  list: (params?: {
+    userId?: string
+    from?: string
+    to?: string
+    page?: number
+    pageSize?: number
+  }) =>
+    api.get<import("@/types").PaginatedResponse<import("@/types").AdhocWorkEntry>>(
+      "/adhoc-work",
+      params as Record<string, unknown>
+    ),
+  getById: (id: string) => api.get<import("@/types").AdhocWorkEntry>(`/adhoc-work/${id}`),
+  update: (
+    id: string,
+    data: Partial<{
+      description: string
+      output: string | null
+      effortHours: number | null
+    }>
+  ) => api.put<import("@/types").AdhocWorkEntry>(`/adhoc-work/${id}`, data),
+  delete: (id: string) => api.delete(`/adhoc-work/${id}`),
+}
+
+export const workApi = {
+  createAudio: (file: Blob, filename: string) => {
+    const form = new FormData()
+    form.append("file", file, filename)
+    return api.postForm<import("@/types").AudioWorkResult>("/work/audio", form)
+  },
+  regenerateFromTranscript: (transcript: string) =>
+    api.post<import("@/types").AudioWorkResult>("/work/transcript", { transcript }),
+  create: (data: {
+    title: string
+    context: string
+    status?: import("@/types").WorkUnitStatus
+    isPrivate?: boolean
+    steps?: Array<{
+      description: string
+      deadline?: string | null
+      done?: boolean
+    }>
+  }) => api.post<import("@/types").WorkUnit>("/work", data),
+  list: (params?: {
+    userId?: string
+    status?: import("@/types").WorkUnitStatus
+    from?: string
+    to?: string
+    page?: number
+    pageSize?: number
+  }) =>
+    api.get<import("@/types").PaginatedResponse<import("@/types").WorkUnit>>(
+      "/work",
+      params as Record<string, unknown>
+    ),
+  deadlines: (date?: string) =>
+    api.get<import("@/types").DeadlinesResult>("/work/deadlines", date ? { date } : undefined),
+  getById: (id: string) => api.get<import("@/types").WorkUnit>(`/work/${id}`),
+  update: (
+    id: string,
+    data: Partial<{
+      title: string
+      context: string
+      status: import("@/types").WorkUnitStatus
+      isPrivate: boolean
+      steps: Array<{
+        description: string
+        deadline?: string | null
+        done?: boolean
+      }>
+    }>
+  ) => api.put<import("@/types").WorkUnit>(`/work/${id}`, data),
+  delete: (id: string) => api.delete(`/work/${id}`),
 }
 
 export const tasksApi = {

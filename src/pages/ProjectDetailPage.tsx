@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
+import { validateRequiredText } from "@/lib/validation"
 
 export default function ProjectDetailPage() {
   const { id = "" } = useParams<{ id: string }>()
@@ -52,11 +53,12 @@ export default function ProjectDetailPage() {
   const detailsChanged = name.trim() !== project.name || (description.trim() || "") !== (project.description ?? "")
 
   const saveDetails = async () => {
-    const nextName = name.trim()
-    if (!nextName) {
-      toast.error("Project name is required")
+    const validationError = validateRequiredText(name, "Project name")
+    if (validationError) {
+      toast.error(validationError)
       return
     }
+    const nextName = name.trim()
 
     setSavingDetails(true)
     try {

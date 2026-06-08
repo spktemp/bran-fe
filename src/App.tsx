@@ -25,6 +25,8 @@ import ContentsPage from "@/pages/ContentsPage"
 import ContentDetailPage from "@/pages/ContentDetailPage"
 import UtilityPage from "@/pages/UtilityPage"
 import IdeationPage from "@/pages/IdeationPage"
+import AdhocWorkPage from "@/pages/AdhocWorkPage"
+import WorkUnitsPage from "@/pages/WorkUnitsPage"
 
 function App() {
   const { user, loading } = useAuth()
@@ -84,10 +86,12 @@ function App() {
           }
         />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/adhoc-work" element={<AdhocWorkPage />} />
+        <Route path="/work" element={<WorkUnitsPage />} />
         <Route
           path="/ai"
           element={
-            <ProtectedRoute roles={["admin", "manager"]}>
+            <ProtectedRoute roles={["admin", "manager", "content_creator"]}>
               <AIQueryPage />
             </ProtectedRoute>
           }
